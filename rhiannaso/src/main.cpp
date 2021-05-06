@@ -62,7 +62,7 @@ public:
 	float gRot = 0;
 	float gCamH = -4;
 	//animation data
-	float lightTrans = -2.0;
+	float lightTrans = -8.0;
 	float gTrans = -3;
 	float sTheta = 0;
 	float eTheta = 0;
@@ -100,10 +100,10 @@ public:
 		}
 
 		if (key == GLFW_KEY_Q && action == GLFW_PRESS){
-			lightTrans -= 0.25;
+			lightTrans -= 1;
 		}
 		if (key == GLFW_KEY_E && action == GLFW_PRESS){
-			lightTrans += 0.25;
+			lightTrans += 1;
 		}
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -169,7 +169,7 @@ public:
 
 		//read in a load the texture
 		texture0 = make_shared<Texture>();
-  		texture0->setFilename(resourceDirectory + "/grass.jpg");
+  		texture0->setFilename(resourceDirectory + "/asphalt.jpg");
   		texture0->init();
   		texture0->setUnit(0);
   		texture0->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
@@ -286,6 +286,17 @@ public:
             lampMesh->createShape(TOshapes[0]);
             lampMesh->measure();
             lampMesh->init();
+		}
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/sphereNoNormals.obj").c_str());
+		if (!rc) {
+			cerr << errStr << endl;
+		} else {
+            sphere = make_shared<Shape>(false);
+            sphere->createShape(TOshapes[0]);
+            sphere->measure();
+            sphere->computeNormals();
+            sphere->init();
 		}
 
         rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/xmas.obj").c_str());
@@ -475,6 +486,22 @@ public:
        Model->popMatrix();
     }
 
+    void drawSpheres(shared_ptr<MatrixStack> Model) {
+        Model->pushMatrix();
+            float zVals[10] = {30, 15, 0, -15, -30, 30, 15, 0, -15, -30};
+            float xVals[10] = {15, 15, 15, 15, 15, -15, -15,-15, -15, -15};
+
+            for (int j=0; j < 10; j++) {
+                Model->pushMatrix();
+                    Model->translate(vec3(xVals[j], 14.5, zVals[j]));
+                    Model->scale(vec3(0.8, 0.8, 0.8));
+                    setModel(prog, Model);
+                    sphere->draw(prog);
+                Model->popMatrix();
+            }
+       Model->popMatrix();
+    }
+
     void drawLamps(shared_ptr<MatrixStack> Model) {
         Model->pushMatrix();
 
@@ -568,35 +595,35 @@ public:
 	void SetMaterial(shared_ptr<Program> curS, int i) {
 
     	switch (i) {
-    		case 0: //shiny blue plastic
-    			glUniform3f(curS->getUniform("MatAmb"), 0.096, 0.046, 0.095);
-    			glUniform3f(curS->getUniform("MatDif"), 0.96, 0.46, 0.95);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.45, 0.23, 0.45);
+    		case 0: // house
+    			glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.01, 0.01);
+    			glUniform3f(curS->getUniform("MatDif"), 0.45, 0.3, 0.05);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.2, 0.15, 0.02);
+    			glUniform1f(curS->getUniform("MatShine"), 10.0);
+    		break;
+    		case 1: // decorations
+    			glUniform3f(curS->getUniform("MatAmb"), 0.086, 0.068, 0.032);
+    			glUniform3f(curS->getUniform("MatDif"), 0.86, 0.68, 0.32);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.45, 0.32, 0.15);
     			glUniform1f(curS->getUniform("MatShine"), 120.0);
     		break;
-    		case 1: // flat grey
-    			glUniform3f(curS->getUniform("MatAmb"), 0.063, 0.038, 0.1);
-    			glUniform3f(curS->getUniform("MatDif"), 0.63, 0.38, 1.0);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.3, 0.2, 0.5);
-    			glUniform1f(curS->getUniform("MatShine"), 4.0);
-    		break;
-    		case 2: //brass
-    			glUniform3f(curS->getUniform("MatAmb"), 0.004, 0.05, 0.09);
-    			glUniform3f(curS->getUniform("MatDif"), 0.04, 0.5, 0.9);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.25, 0.45);
-    			glUniform1f(curS->getUniform("MatShine"), 27.9);
+    		case 2: //car
+    			glUniform3f(curS->getUniform("MatAmb"), 0.066, 0.066, 0.068);
+    			glUniform3f(curS->getUniform("MatDif"), 0.66, 0.66, 0.68);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.4, 0.4, 0.41);
+    			glUniform1f(curS->getUniform("MatShine"), 127.9);
     		break;
             case 3: //plant
-    			glUniform3f(curS->getUniform("MatAmb"), 0.004, 0.3, 0.01);
-    			glUniform3f(curS->getUniform("MatDif"), 0.4, 0.5, 0.9);
+    			glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.1, 0.01);
+    			glUniform3f(curS->getUniform("MatDif"), 0.4, 0.6, 0.4);
     			glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.05, 0.05);
     			glUniform1f(curS->getUniform("MatShine"), 3.0);
             break;
             case 4: //lamp
     			glUniform3f(curS->getUniform("MatAmb"), 0.03, 0.03, 0.03);
     			glUniform3f(curS->getUniform("MatDif"), 0.3, 0.3, 0.3);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.3, 0.3, 0.3);
-    			glUniform1f(curS->getUniform("MatShine"), 50.0);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.5, 0.5, 0.5);
+    			glUniform1f(curS->getUniform("MatShine"), 115.0);
             break;
   		}
 	}
@@ -751,7 +778,7 @@ public:
 		prog->bind();
 		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
 		glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(View->topMatrix()));
-		glUniform3f(prog->getUniform("lightPos"), lightTrans, 2.0, 15.0);
+		glUniform3f(prog->getUniform("lightPos"), lightTrans, 8.0, 25.0);
         Model->pushMatrix();
             Model->loadIdentity();
             Model->translate(vec3(0, 0, 0));
@@ -771,6 +798,10 @@ public:
             // Draw trees
             SetMaterial(prog, 3);
             drawTrees(Model);
+
+            // Draw "stars"
+            SetMaterial(prog, 1);
+            drawSpheres(Model);
 
             // Draw streetlamps
             SetMaterial(prog, 4);
