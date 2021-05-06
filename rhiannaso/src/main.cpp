@@ -39,8 +39,14 @@ public:
 
 	//our geometry
 	shared_ptr<Shape> sphere;
-
 	shared_ptr<Shape> theBunny;
+    vector<shared_ptr<Shape>> carMesh;
+    vector<shared_ptr<Shape>> houseMesh;
+    vector<shared_ptr<Shape>> santaMesh;
+    vector<shared_ptr<Shape>> sleighMesh;
+    shared_ptr<Shape> floorMesh;
+    shared_ptr<Shape> lampMesh;
+    shared_ptr<Shape> treeMesh;
 
 	//global data for ground plane - direct load constant defined CPU data to GPU (not obj)
 	GLuint GrndBuffObj, GrndNorBuffObj, GrndTexBuffObj, GIndxBuffObj;
@@ -54,13 +60,23 @@ public:
 	//global data (larger program should be encapsulated)
 	vec3 gMin;
 	float gRot = 0;
-	float gCamH = 0;
+	float gCamH = -4;
 	//animation data
-	float lightTrans = 0;
+	float lightTrans = -2.0;
 	float gTrans = -3;
 	float sTheta = 0;
 	float eTheta = 0;
 	float wTheta = 0;
+    float driveTheta = 0;
+
+    vec3 santaMin;
+    vec3 santaMax;
+    vec3 sleighMin;
+    vec3 sleighMax;
+    vec3 houseMin;
+    vec3 houseMax;
+    vec3 carMin;
+    vec3 carMax;
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
@@ -84,10 +100,10 @@ public:
 		}
 
 		if (key == GLFW_KEY_Q && action == GLFW_PRESS){
-			lightTrans += 0.25;
+			lightTrans -= 0.25;
 		}
 		if (key == GLFW_KEY_E && action == GLFW_PRESS){
-			lightTrans -= 0.25;
+			lightTrans += 0.25;
 		}
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -153,11 +169,75 @@ public:
 
 		//read in a load the texture
 		texture0 = make_shared<Texture>();
-  		texture0->setFilename(resourceDirectory + "/flowers.jpg");
+  		texture0->setFilename(resourceDirectory + "/grass.jpg");
   		texture0->init();
   		texture0->setUnit(0);
   		texture0->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}
+
+    void findMin(float x, float y, float z, string mesh) {
+        if (mesh == "santa") {
+            if (x < santaMin.x)
+                santaMin.x = x;
+            if (y < santaMin.y)
+                santaMin.y = y;
+            if (z < santaMin.z)
+                santaMin.z = z;
+        } else if (mesh == "sleigh") {
+            if (x < sleighMin.x)
+                sleighMin.x = x;
+            if (y < sleighMin.y)
+                sleighMin.y = y;
+            if (z < sleighMin.z)
+                sleighMin.z = z;
+        } else if (mesh == "house") {
+            if (x < houseMin.x)
+                houseMin.x = x;
+            if (y < houseMin.y)
+                houseMin.y = y;
+            if (z < houseMin.z)
+                houseMin.z = z;
+        } else {
+            if (x < carMin.x)
+                carMin.x = x;
+            if (y < carMin.y)
+                carMin.y = y;
+            if (z < carMin.z)
+                carMin.z = z;
+        }
+    }
+
+    void findMax(float x, float y, float z, string mesh) {
+        if (mesh == "santa") {
+            if (x > santaMax.x)
+                santaMax.x = x;
+            if (y > santaMax.y)
+                santaMax.y = y;
+            if (z > santaMax.z)
+                santaMax.z = z;
+        } else if (mesh == "sleigh") {
+            if (x > sleighMax.x)
+                sleighMax.x = x;
+            if (y > sleighMax.y)
+                sleighMax.y = y;
+            if (z > sleighMax.z)
+                sleighMax.z = z;
+        } else if (mesh == "house") {
+            if (x > houseMax.x)
+                houseMax.x = x;
+            if (y > houseMax.y)
+                houseMax.y = y;
+            if (z > houseMax.z)
+                houseMax.z = z;
+        } else {
+            if (x > carMax.x)
+                carMax.x = x;
+            if (y > carMax.y)
+                carMax.y = y;
+            if (z > carMax.z)
+                carMax.z = z;
+        }
+    }
 
 	void initGeom(const std::string& resourceDirectory)
 	{
@@ -169,33 +249,122 @@ public:
  		vector<tinyobj::material_t> objMaterials;
  		string errStr;
 		//load in the mesh and make the shape(s)
- 		bool rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/sphere.obj").c_str());
-		if (!rc) {
-			cerr << errStr << endl;
-		} else {
-			sphere = make_shared<Shape>();
-			sphere->createShape(TOshapes[0]);
-			sphere->measure();
-			sphere->init();
-		}
-		//read out information stored in the shape about its size - something like this...
-		//then do something with that information.....
-		gMin.x = sphere->min.x;
-		gMin.y = sphere->min.y;
+ 		// bool rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/sphere.obj").c_str());
+		// if (!rc) {
+		// 	cerr << errStr << endl;
+		// } else {
+		// 	sphere = make_shared<Shape>();
+		// 	sphere->createShape(TOshapes[0]);
+		// 	sphere->measure();
+		// 	sphere->init();
+		// }
+		// //read out information stored in the shape about its size - something like this...
+		// //then do something with that information.....
+		// gMin.x = sphere->min.x;
+		// gMin.y = sphere->min.y;
 
 		// Initialize bunny mesh.
-		vector<tinyobj::shape_t> TOshapesB;
- 		vector<tinyobj::material_t> objMaterialsB;
-		//load in the mesh and make the shape(s)
- 		rc = tinyobj::LoadObj(TOshapesB, objMaterialsB, errStr, (resourceDirectory + "/bunny.obj").c_str());
+		// vector<tinyobj::shape_t> TOshapesB;
+ 		// vector<tinyobj::material_t> objMaterialsB;
+		// //load in the mesh and make the shape(s)
+ 		// rc = tinyobj::LoadObj(TOshapesB, objMaterialsB, errStr, (resourceDirectory + "/bunny.obj").c_str());
+		// if (!rc) {
+		// 	cerr << errStr << endl;
+		// } else {
+			
+		// 	theBunny = make_shared<Shape>();
+		// 	theBunny->createShape(TOshapesB[0]);
+		// 	theBunny->measure();
+		// 	theBunny->init();
+		// }
+
+        bool rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/streetlamp.obj").c_str());
 		if (!rc) {
 			cerr << errStr << endl;
 		} else {
-			
-			theBunny = make_shared<Shape>();
-			theBunny->createShape(TOshapesB[0]);
-			theBunny->measure();
-			theBunny->init();
+            lampMesh = make_shared<Shape>(false);
+            lampMesh->createShape(TOshapes[0]);
+            lampMesh->measure();
+            lampMesh->init();
+		}
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/xmas.obj").c_str());
+		if (!rc) {
+			cerr << errStr << endl;
+		} else {
+            treeMesh = make_shared<Shape>(false);
+            treeMesh->createShape(TOshapes[0]);
+            treeMesh->measure();
+            treeMesh->init();
+		}
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/sleigh.obj").c_str());
+        if (!rc) {
+			cerr << errStr << endl;
+		} else {
+            for (int i = 0; i < TOshapes.size(); i++) {
+                shared_ptr<Shape> tmp = make_shared<Shape>(false);
+                tmp->createShape(TOshapes[i]);
+                tmp->measure();
+                tmp->init();
+
+                findMin(tmp->min.x, tmp->min.y, tmp->min.z, "sleigh");
+                findMax(tmp->max.x, tmp->max.y, tmp->max.z, "sleigh");
+
+                sleighMesh.push_back(tmp);
+            }
+		}
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/santa.obj").c_str());
+        if (!rc) {
+			cerr << errStr << endl;
+		} else {
+            for (int i = 0; i < TOshapes.size(); i++) {
+                shared_ptr<Shape> tmp = make_shared<Shape>(false);
+                tmp->createShape(TOshapes[i]);
+                tmp->measure();
+                tmp->init();
+
+                findMin(tmp->min.x, tmp->min.y, tmp->min.z, "santa");
+                findMax(tmp->max.x, tmp->max.y, tmp->max.z, "santa");
+
+                santaMesh.push_back(tmp);
+            }
+		}
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/smallHouse.obj").c_str());
+        if (!rc) {
+			cerr << errStr << endl;
+		} else {
+            for (int i = 0; i < TOshapes.size(); i++) {
+                shared_ptr<Shape> tmp = make_shared<Shape>(false);
+                tmp->createShape(TOshapes[i]);
+                tmp->measure();
+                tmp->init();
+
+                findMin(tmp->min.x, tmp->min.y, tmp->min.z, "house");
+                findMax(tmp->max.x, tmp->max.y, tmp->max.z, "house");
+                
+                houseMesh.push_back(tmp);
+            }
+		}
+
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/car.obj").c_str());
+		if (!rc) {
+			cerr << errStr << endl;
+		} else {
+            for (int i = 0; i < TOshapes.size(); i++) {
+                shared_ptr<Shape> tmp = make_shared<Shape>(false);
+                tmp->createShape(TOshapes[i]);
+                tmp->measure();
+                tmp->init();
+
+                findMin(tmp->min.x, tmp->min.y, tmp->min.z, "car");
+                findMax(tmp->max.x, tmp->max.y, tmp->max.z, "car");
+
+                carMesh.push_back(tmp);
+            }
 		}
 
 		//code to load in the ground plane (CPU defined data passed to GPU)
@@ -205,8 +374,8 @@ public:
 	//directly pass quad for the ground to the GPU
 	void initGround() {
 
-		float g_groundSize = 20;
-		float g_groundY = -0.25;
+		float g_groundSize = 30;
+		float g_groundY = 0;
 
   		// A x-z plane at y = g_groundY of dimension [-g_groundSize, g_groundSize]^2
 		float GrndPos[] = {
@@ -229,60 +398,171 @@ public:
       		0, 0, // back
       		0, 1,
       		1, 1,
-      		1, 0 };
+      		1, 0 
+        };
 
-      	unsigned short idx[] = {0, 1, 2, 0, 2, 3};
+        unsigned short idx[] = {0, 1, 2, 0, 2, 3};
 
-		//generate the ground VAO
-      	glGenVertexArrays(1, &GroundVertexArrayID);
-      	glBindVertexArray(GroundVertexArrayID);
+        //generate the ground VAO
+        glGenVertexArrays(1, &GroundVertexArrayID);
+        glBindVertexArray(GroundVertexArrayID);
 
-      	g_GiboLen = 6;
-      	glGenBuffers(1, &GrndBuffObj);
-      	glBindBuffer(GL_ARRAY_BUFFER, GrndBuffObj);
-      	glBufferData(GL_ARRAY_BUFFER, sizeof(GrndPos), GrndPos, GL_STATIC_DRAW);
+        g_GiboLen = 6;
+        glGenBuffers(1, &GrndBuffObj);
+        glBindBuffer(GL_ARRAY_BUFFER, GrndBuffObj);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GrndPos), GrndPos, GL_STATIC_DRAW);
 
-      	glGenBuffers(1, &GrndNorBuffObj);
-      	glBindBuffer(GL_ARRAY_BUFFER, GrndNorBuffObj);
-      	glBufferData(GL_ARRAY_BUFFER, sizeof(GrndNorm), GrndNorm, GL_STATIC_DRAW);
+        glGenBuffers(1, &GrndNorBuffObj);
+        glBindBuffer(GL_ARRAY_BUFFER, GrndNorBuffObj);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GrndNorm), GrndNorm, GL_STATIC_DRAW);
 
-      	glGenBuffers(1, &GrndTexBuffObj);
-      	glBindBuffer(GL_ARRAY_BUFFER, GrndTexBuffObj);
-      	glBufferData(GL_ARRAY_BUFFER, sizeof(GrndTex), GrndTex, GL_STATIC_DRAW);
+        glGenBuffers(1, &GrndTexBuffObj);
+        glBindBuffer(GL_ARRAY_BUFFER, GrndTexBuffObj);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GrndTex), GrndTex, GL_STATIC_DRAW);
 
-      	glGenBuffers(1, &GIndxBuffObj);
-     	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GIndxBuffObj);
-      	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
-      }
+        glGenBuffers(1, &GIndxBuffObj);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GIndxBuffObj);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
+    }
 
-      //code to draw the ground plane
-     void drawGround(shared_ptr<Program> curS) {
-     	curS->bind();
-     	glBindVertexArray(GroundVertexArrayID);
-     	texture0->bind(curS->getUniform("Texture0"));
-		//draw the ground plane 
-  		SetModel(vec3(0, -1, 0), 0, 0, 1, curS);
-  		glEnableVertexAttribArray(0);
-  		glBindBuffer(GL_ARRAY_BUFFER, GrndBuffObj);
-  		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    //code to draw the ground plane
+    void drawGround(shared_ptr<Program> curS) {
+        curS->bind();
+        glBindVertexArray(GroundVertexArrayID);
+        texture0->bind(curS->getUniform("Texture0"));
+        //draw the ground plane 
+        SetModel(vec3(0, 0, 0), 0, 0, 1, curS);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, GrndBuffObj);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-  		glEnableVertexAttribArray(1);
-  		glBindBuffer(GL_ARRAY_BUFFER, GrndNorBuffObj);
-  		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, GrndNorBuffObj);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-  		glEnableVertexAttribArray(2);
-  		glBindBuffer(GL_ARRAY_BUFFER, GrndTexBuffObj);
-  		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, GrndTexBuffObj);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-   		// draw!
-  		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GIndxBuffObj);
-  		glDrawElements(GL_TRIANGLES, g_GiboLen, GL_UNSIGNED_SHORT, 0);
+        // draw!
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GIndxBuffObj);
+        glDrawElements(GL_TRIANGLES, g_GiboLen, GL_UNSIGNED_SHORT, 0);
 
-  		glDisableVertexAttribArray(0);
-  		glDisableVertexAttribArray(1);
-  		glDisableVertexAttribArray(2);
-  		curS->unbind();
-     }
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        curS->unbind();
+    }
+
+    float findCenter(float min, float max) {
+        float dist = (max-min)/2;
+        return max-dist;
+    }
+
+    void drawTrees(shared_ptr<MatrixStack> Model) {
+        Model->pushMatrix();
+            float zVals[10] = {30, 15, 0, -15, -30, 30, 15, 0, -15, -30};
+            float xVals[10] = {15, 15, 15, 15, 15, -15, -15,-15, -15, -15};
+
+            for (int j=0; j < 10; j++) {
+                Model->pushMatrix();
+                    Model->translate(vec3(xVals[j], 0, zVals[j]));
+                    Model->scale(vec3(0.5, 0.5, 0.5));
+                    setModel(prog, Model);
+                    treeMesh->draw(prog);
+                Model->popMatrix();
+            }
+       Model->popMatrix();
+    }
+
+    void drawLamps(shared_ptr<MatrixStack> Model) {
+        Model->pushMatrix();
+
+            float zVals[4] = {22.5, 7.5, -7.5, -22.5};
+
+            for (int l=0; l < 4; l++) {
+                Model->pushMatrix();
+                    Model->translate(vec3(15, 0, zVals[l]));
+                    Model->scale(vec3(3, 3, 3));
+                    setModel(prog, Model);
+                    lampMesh->draw(prog);
+                Model->popMatrix();
+            }
+
+            for (int r=0; r < 4; r++) {
+                Model->pushMatrix();
+                    Model->translate(vec3(-15, 0, zVals[r]));
+                    Model->rotate(3.14159, vec3(0, 1, 0));
+                    Model->scale(vec3(3, 3, 3));
+                    setModel(prog, Model);
+                    lampMesh->draw(prog);
+                Model->popMatrix();
+            }
+        Model->popMatrix();
+    }
+
+    void drawHouse(shared_ptr<MatrixStack> Model) {
+        Model->pushMatrix();
+            float zCenter = findCenter(houseMin.z, houseMax.z);
+            Model->loadIdentity();
+            Model->translate(vec3(0, 0, -zCenter));
+
+            Model->pushMatrix();
+                Model->scale(vec3(0.07, 0.07, 0.07));
+                Model->rotate(1.5, vec3(0, 1, 0));
+                Model->translate(vec3(0, 0, -23));
+
+                setModel(prog, Model);
+                for (int i=0; i < houseMesh.size(); i++) {
+                    houseMesh[i]->draw(prog);
+                }
+            Model->popMatrix();
+        Model->popMatrix();
+    }
+
+    void drawCar(shared_ptr<MatrixStack> Model) {
+        Model->pushMatrix();
+            driveTheta = 3*sin(glfwGetTime());
+
+            Model->scale(vec3(0.4, 0.4, 0.4));
+            Model->translate(vec3(-5, 0.25, 8));
+            Model->translate(vec3(0, 0, driveTheta));
+
+            setModel(prog, Model);
+            for (int i=0; i < carMesh.size(); i++) {
+                carMesh[i]->draw(prog);
+            }
+        Model->popMatrix();
+    }
+
+    void drawDecorations(shared_ptr<MatrixStack> Model) {
+        Model->pushMatrix();
+            float center = findCenter(santaMin.z, santaMax.z);
+            Model->translate(vec3(0, 0, -center));
+
+            Model->translate(vec3(-7, 0, -15));
+            Model->scale(vec3(0.0125, 0.0125, 0.0125));
+
+            setModel(prog, Model);
+            for (int i=0; i < santaMesh.size(); i++) {
+                santaMesh[i]->draw(prog);
+            }
+        Model->popMatrix();
+
+        Model->pushMatrix();
+            center = findCenter(sleighMin.z, sleighMax.z);
+            Model->translate(vec3(0, 0, -center));
+
+            Model->translate(vec3(0, 9, -16));
+            Model->rotate(1.5, vec3(0, 1, 0));
+            Model->scale(vec3(1.25, 1.25, 1.25));
+
+            setModel(prog, Model);
+            for (int i=0; i < sleighMesh.size(); i++) {
+                sleighMesh[i]->draw(prog);
+            }
+        Model->popMatrix();
+    }
 
      //helper function to pass material data to the GPU
 	void SetMaterial(shared_ptr<Program> curS, int i) {
@@ -306,6 +586,18 @@ public:
     			glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.25, 0.45);
     			glUniform1f(curS->getUniform("MatShine"), 27.9);
     		break;
+            case 3: //plant
+    			glUniform3f(curS->getUniform("MatAmb"), 0.004, 0.3, 0.01);
+    			glUniform3f(curS->getUniform("MatDif"), 0.4, 0.5, 0.9);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.05, 0.05);
+    			glUniform1f(curS->getUniform("MatShine"), 3.0);
+            break;
+            case 4: //lamp
+    			glUniform3f(curS->getUniform("MatAmb"), 0.03, 0.03, 0.03);
+    			glUniform3f(curS->getUniform("MatDif"), 0.3, 0.3, 0.3);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.3, 0.3, 0.3);
+    			glUniform1f(curS->getUniform("MatShine"), 50.0);
+            break;
   		}
 	}
 
@@ -324,107 +616,107 @@ public:
    	}
 
    	/* code to draw waving hierarchical model */
-   	void drawHierModel(shared_ptr<MatrixStack> Model) {
-   		// draw hierarchical mesh - replace with your code if desired
-		Model->pushMatrix();
-			Model->loadIdentity();
-			Model->translate(vec3(gTrans, 0, 6));
-			/* draw top cube - aka head */
-			Model->pushMatrix();
-				Model->translate(vec3(0, 1.4, 0));
-				Model->scale(vec3(0.5, 0.5, 0.5));
-				setModel(prog, Model);
-				sphere->draw(prog);
-			Model->popMatrix();
-			//draw the torso with these transforms
-			Model->pushMatrix();
-			  Model->scale(vec3(1.15, 1.35, 1.0));
-			  setModel(prog, Model);
-			  sphere->draw(prog);
-			Model->popMatrix();
-			// draw the upper 'arm' - relative 
-			//note you must change this to include 3 components!
-			Model->pushMatrix();
-			  //place at shoulder
-			  Model->translate(vec3(0.8, 0.8, 0));
-			  //rotate shoulder joint
-			  Model->rotate(sTheta, vec3(0, 0, 1));
-			  //move to shoulder joint
-			  Model->translate(vec3(0.8, 0, 0));
+   	// void drawHierModel(shared_ptr<MatrixStack> Model) {
+   	// 	// draw hierarchical mesh - replace with your code if desired
+	// 	Model->pushMatrix();
+	// 		Model->loadIdentity();
+	// 		Model->translate(vec3(gTrans, 0, 6));
+	// 		/* draw top cube - aka head */
+	// 		Model->pushMatrix();
+	// 			Model->translate(vec3(0, 1.4, 0));
+	// 			Model->scale(vec3(0.5, 0.5, 0.5));
+	// 			setModel(prog, Model);
+	// 			sphere->draw(prog);
+	// 		Model->popMatrix();
+	// 		//draw the torso with these transforms
+	// 		Model->pushMatrix();
+	// 		  Model->scale(vec3(1.15, 1.35, 1.0));
+	// 		  setModel(prog, Model);
+	// 		  sphere->draw(prog);
+	// 		Model->popMatrix();
+	// 		// draw the upper 'arm' - relative 
+	// 		//note you must change this to include 3 components!
+	// 		Model->pushMatrix();
+	// 		  //place at shoulder
+	// 		  Model->translate(vec3(0.8, 0.8, 0));
+	// 		  //rotate shoulder joint
+	// 		  Model->rotate(sTheta, vec3(0, 0, 1));
+	// 		  //move to shoulder joint
+	// 		  Model->translate(vec3(0.8, 0, 0));
 	
-			    //now draw lower arm - this is INCOMPLETE and you will add a 3rd component
-			  	//right now this is in the SAME place as the upper arm
-			  	Model->pushMatrix();
-                    Model->translate(vec3(0.7, 0, 0)); // place at elbow
-                    Model->rotate(eTheta, vec3(0, 0, 1)); // rotate elbow joint
-                    Model->translate(vec3(0.7, 0, 0)); // move to elbow joint
+	// 		    //now draw lower arm - this is INCOMPLETE and you will add a 3rd component
+	// 		  	//right now this is in the SAME place as the upper arm
+	// 		  	Model->pushMatrix();
+    //                 Model->translate(vec3(0.7, 0, 0)); // place at elbow
+    //                 Model->rotate(eTheta, vec3(0, 0, 1)); // rotate elbow joint
+    //                 Model->translate(vec3(0.7, 0, 0)); // move to elbow joint
 
-                    Model->pushMatrix();
-                        Model->translate(vec3(0.55, 0, 0)); // place at wrist
-                        Model->rotate(wTheta, vec3(0, 0, 1)); // rotate wrist joint
-                        Model->translate(vec3(0.2, 0, 0)); // move to wrist joint
+    //                 Model->pushMatrix();
+    //                     Model->translate(vec3(0.55, 0, 0)); // place at wrist
+    //                     Model->rotate(wTheta, vec3(0, 0, 1)); // rotate wrist joint
+    //                     Model->translate(vec3(0.2, 0, 0)); // move to wrist joint
 
-                        Model->scale(vec3(0.35, 0.25, 0.25));
-                        setModel(prog, Model);
-                        sphere->draw(prog);
-                    Model->popMatrix();
+    //                     Model->scale(vec3(0.35, 0.25, 0.25));
+    //                     setModel(prog, Model);
+    //                     sphere->draw(prog);
+    //                 Model->popMatrix();
 
-                    Model->scale(vec3(0.7, 0.25, 0.25));
-                    setModel(prog, Model);
-                    sphere->draw(prog);
-			  	Model->popMatrix();
+    //                 Model->scale(vec3(0.7, 0.25, 0.25));
+    //                 setModel(prog, Model);
+    //                 sphere->draw(prog);
+	// 		  	Model->popMatrix();
 
-			  //Do final scale ONLY to upper arm then draw
-			  //non-uniform scale
-			  Model->scale(vec3(0.8, 0.3, 0.25));
-			  setModel(prog, Model);
-			  sphere->draw(prog);
-			Model->popMatrix();
+	// 		  //Do final scale ONLY to upper arm then draw
+	// 		  //non-uniform scale
+	// 		  Model->scale(vec3(0.8, 0.3, 0.25));
+	// 		  setModel(prog, Model);
+	// 		  sphere->draw(prog);
+	// 		Model->popMatrix();
 
-            // static left arm
-            Model->pushMatrix();
-			  //place at shoulder
-			  Model->translate(vec3(-0.8, 0.8, 0));
-			  //rotate shoulder joint
-			  Model->rotate(3.55, vec3(0, 0, 1));
-			  //move to shoulder joint
-			  Model->translate(vec3(0.8, 0, 0));
+    //         // static left arm
+    //         Model->pushMatrix();
+	// 		  //place at shoulder
+	// 		  Model->translate(vec3(-0.8, 0.8, 0));
+	// 		  //rotate shoulder joint
+	// 		  Model->rotate(3.55, vec3(0, 0, 1));
+	// 		  //move to shoulder joint
+	// 		  Model->translate(vec3(0.8, 0, 0));
 	
-			    //now draw lower arm - this is INCOMPLETE and you will add a 3rd component
-			  	//right now this is in the SAME place as the upper arm
-			  	Model->pushMatrix();
-                    Model->translate(vec3(0.7, 0, 0)); // place at elbow
-                    Model->rotate(2, vec3(0, 0, 1)); // rotate elbow joint
-                    Model->translate(vec3(0.7, 0, 0)); // move to elbow joint
+	// 		    //now draw lower arm - this is INCOMPLETE and you will add a 3rd component
+	// 		  	//right now this is in the SAME place as the upper arm
+	// 		  	Model->pushMatrix();
+    //                 Model->translate(vec3(0.7, 0, 0)); // place at elbow
+    //                 Model->rotate(2, vec3(0, 0, 1)); // rotate elbow joint
+    //                 Model->translate(vec3(0.7, 0, 0)); // move to elbow joint
 
-                    Model->pushMatrix();
-                        Model->translate(vec3(0.75, 0, 0)); // place at wrist
-                        Model->rotate(-0.75, vec3(0, 0, 1)); // rotate wrist joint
-                        Model->scale(vec3(0.35, 0.25, 0.25));
-                        setModel(prog, Model);
-                        sphere->draw(prog);
-                    Model->popMatrix();
+    //                 Model->pushMatrix();
+    //                     Model->translate(vec3(0.75, 0, 0)); // place at wrist
+    //                     Model->rotate(-0.75, vec3(0, 0, 1)); // rotate wrist joint
+    //                     Model->scale(vec3(0.35, 0.25, 0.25));
+    //                     setModel(prog, Model);
+    //                     sphere->draw(prog);
+    //                 Model->popMatrix();
 
-                    Model->scale(vec3(0.7, 0.25, 0.25));
-                    setModel(prog, Model);
-                    sphere->draw(prog);
-			  	Model->popMatrix();
+    //                 Model->scale(vec3(0.7, 0.25, 0.25));
+    //                 setModel(prog, Model);
+    //                 sphere->draw(prog);
+	// 		  	Model->popMatrix();
 
-			  //Do final scale ONLY to upper arm then draw
-			  //non-uniform scale
-			  Model->scale(vec3(0.8, 0.3, 0.25));
-			  setModel(prog, Model);
-			  sphere->draw(prog);
-			Model->popMatrix();
+	// 		  //Do final scale ONLY to upper arm then draw
+	// 		  //non-uniform scale
+	// 		  Model->scale(vec3(0.8, 0.3, 0.25));
+	// 		  setModel(prog, Model);
+	// 		  sphere->draw(prog);
+	// 		Model->popMatrix();
 		
-		Model->popMatrix();
+	// 	Model->popMatrix();
 
-        sTheta = sin(glfwGetTime());
+    //     sTheta = sin(glfwGetTime());
 
-        eTheta = (sin(glfwGetTime()) + 1)/1.5;
+    //     eTheta = (sin(glfwGetTime()) + 1)/1.5;
 
-        wTheta = sin(4*glfwGetTime())/2;
-   	}
+    //     wTheta = sin(4*glfwGetTime())/2;
+   	// }
 
 	void render() {
 		// Get current frame buffer size.
@@ -451,7 +743,7 @@ public:
 		View->pushMatrix();
 		View->loadIdentity();
 		//camera up and down
-		View->translate(vec3(0, gCamH, 0));
+		View->translate(vec3(0, gCamH, -25));
 		//global rotate (the whole scene )
 		View->rotate(gRot, vec3(0, 1, 0));
 
@@ -459,29 +751,54 @@ public:
 		prog->bind();
 		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
 		glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(View->topMatrix()));
-		glUniform3f(prog->getUniform("lightPos"), lightTrans, 2.0, 2.9);
+		glUniform3f(prog->getUniform("lightPos"), lightTrans, 2.0, 15.0);
+        Model->pushMatrix();
+            Model->loadIdentity();
+            Model->translate(vec3(0, 0, 0));
+
+            // Draw house
+            SetMaterial(prog, 0);
+            drawHouse(Model);
+
+            // Draw santa and sleigh
+            SetMaterial(prog, 1);
+            drawDecorations(Model);
+
+            // Draw car
+            SetMaterial(prog, 2);
+            drawCar(Model);
+
+            // Draw trees
+            SetMaterial(prog, 3);
+            drawTrees(Model);
+
+            // Draw streetlamps
+            SetMaterial(prog, 4);
+            drawLamps(Model);
+
+        Model->popMatrix();
 
 		// draw the array of bunnies
-		Model->pushMatrix();
+		// Model->pushMatrix();
 
-		float sp = 3.0;
-		float off = -3.5;
-		  for (int i =0; i < 3; i++) {
-		  	for (int j=0; j < 3; j++) {
-			  Model->pushMatrix();
-				Model->translate(vec3(off+sp*i, -1, off+sp*j));
-				Model->scale(vec3(0.85, 0.85, 0.85));
-				SetMaterial(prog, (i+j)%3);
-				glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-				theBunny->draw(prog);
-			  Model->popMatrix();
-			}
-		  }
-		Model->popMatrix();
+		// float sp = 3.0;
+		// float off = -3.5;
+		//   for (int i =0; i < 3; i++) {
+		//   	for (int j=0; j < 3; j++) {
+		// 	  Model->pushMatrix();
+		// 		Model->translate(vec3(off+sp*i, -1, off+sp*j));
+		// 		Model->scale(vec3(0.85, 0.85, 0.85));
+		// 		SetMaterial(prog, (i+j)%3);
+		// 		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+		// 		theBunny->draw(prog);
+		// 	  Model->popMatrix();
+		// 	}
+		//   }
+		// Model->popMatrix();
 
 		//draw the waving HM
-		SetMaterial(prog, 1);
-		drawHierModel(Model);
+		// SetMaterial(prog, 1);
+		// drawHierModel(Model);
 
 		prog->unbind();
 
