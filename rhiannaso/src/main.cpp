@@ -69,6 +69,13 @@ public:
 	float wTheta = 0;
     float driveTheta = 0;
 
+    // color toggling
+    int houseColor = 0;
+    int carColor = 2;
+    int lampColor = 4;
+    int treeColor = 3;
+    int decColor = 1;
+
     vec3 santaMin;
     vec3 santaMax;
     vec3 sleighMin;
@@ -98,7 +105,13 @@ public:
 		if (key == GLFW_KEY_F && action == GLFW_PRESS){
 			gCamH  -= 0.25;
 		}
-
+        if (key == GLFW_KEY_M && action == GLFW_PRESS){
+			houseColor += 1;
+            carColor += 1;
+            lampColor += 1;
+            treeColor += 1;
+            decColor += 1;
+		}
 		if (key == GLFW_KEY_Q && action == GLFW_PRESS){
 			lightTrans -= 1;
 		}
@@ -163,6 +176,7 @@ public:
 		texProg->addUniform("V");
 		texProg->addUniform("M");
 		texProg->addUniform("Texture0");
+        prog->addUniform("lightPos");
 		texProg->addAttribute("vertPos");
 		texProg->addAttribute("vertNor");
 		texProg->addAttribute("vertTex");
@@ -249,35 +263,6 @@ public:
  		vector<tinyobj::material_t> objMaterials;
  		string errStr;
 		//load in the mesh and make the shape(s)
- 		// bool rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/sphere.obj").c_str());
-		// if (!rc) {
-		// 	cerr << errStr << endl;
-		// } else {
-		// 	sphere = make_shared<Shape>();
-		// 	sphere->createShape(TOshapes[0]);
-		// 	sphere->measure();
-		// 	sphere->init();
-		// }
-		// //read out information stored in the shape about its size - something like this...
-		// //then do something with that information.....
-		// gMin.x = sphere->min.x;
-		// gMin.y = sphere->min.y;
-
-		// Initialize bunny mesh.
-		// vector<tinyobj::shape_t> TOshapesB;
- 		// vector<tinyobj::material_t> objMaterialsB;
-		// //load in the mesh and make the shape(s)
- 		// rc = tinyobj::LoadObj(TOshapesB, objMaterialsB, errStr, (resourceDirectory + "/bunny.obj").c_str());
-		// if (!rc) {
-		// 	cerr << errStr << endl;
-		// } else {
-			
-		// 	theBunny = make_shared<Shape>();
-		// 	theBunny->createShape(TOshapesB[0]);
-		// 	theBunny->measure();
-		// 	theBunny->init();
-		// }
-
         bool rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/streetlamp.obj").c_str());
 		if (!rc) {
 			cerr << errStr << endl;
@@ -535,9 +520,9 @@ public:
             Model->translate(vec3(0, 0, -zCenter));
 
             Model->pushMatrix();
-                Model->scale(vec3(0.07, 0.07, 0.07));
+                Model->translate(vec3(0, 0, -3));
                 Model->rotate(1.5, vec3(0, 1, 0));
-                Model->translate(vec3(0, 0, -23));
+                Model->scale(vec3(0.07, 0.07, 0.07));
 
                 setModel(prog, Model);
                 for (int i=0; i < houseMesh.size(); i++) {
@@ -580,7 +565,7 @@ public:
             center = findCenter(sleighMin.z, sleighMax.z);
             Model->translate(vec3(0, 0, -center));
 
-            Model->translate(vec3(0, 9, -16));
+            Model->translate(vec3(1, 9, -19));
             Model->rotate(1.5, vec3(0, 1, 0));
             Model->scale(vec3(1.25, 1.25, 1.25));
 
@@ -784,27 +769,27 @@ public:
             Model->translate(vec3(0, 0, 0));
 
             // Draw house
-            SetMaterial(prog, 0);
+            SetMaterial(prog, houseColor%5);
             drawHouse(Model);
 
             // Draw santa and sleigh
-            SetMaterial(prog, 1);
+            SetMaterial(prog, decColor%5);
             drawDecorations(Model);
 
             // Draw car
-            SetMaterial(prog, 2);
+            SetMaterial(prog, carColor%5);
             drawCar(Model);
 
             // Draw trees
-            SetMaterial(prog, 3);
+            SetMaterial(prog, treeColor%5);
             drawTrees(Model);
 
             // Draw "stars"
-            SetMaterial(prog, 1);
+            SetMaterial(prog, decColor%5);
             drawSpheres(Model);
 
             // Draw streetlamps
-            SetMaterial(prog, 4);
+            SetMaterial(prog, lampColor%5);
             drawLamps(Model);
 
         Model->popMatrix();

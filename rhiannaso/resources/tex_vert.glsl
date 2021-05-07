@@ -6,17 +6,23 @@ uniform mat4 P;
 uniform mat4 M;
 uniform mat4 V;
 
+uniform vec3 lightPos;
+
 out vec2 vTexCoord;
 out vec3 fragNor;
+out vec3 lightDir;
+out vec3 EPos;
 
 void main() {
 
   vec4 vPosition;
 
   /* First model transforms */
-  gl_Position = P * V *M * vec4(vertPos.xyz, 1.0);
+  gl_Position = P * V * M * vec4(vertPos.xyz, 1.0);
 
-  fragNor = (M * vec4(vertNor, 0.0)).xyz;
+  fragNor = (V * M * vec4(vertNor, 0.0)).xyz;
+  lightDir = (V * vec4(lightPos - (M*vec4(vertPos.xyz, 1.0)).xyz, 0.0)).xyz;
+  EPos = (V * M * vec4(vertPos.xyz, 1.0)).xyz;
 
   /* pass through the texture coordinates to be interpolated */
   vTexCoord = vertTex;
