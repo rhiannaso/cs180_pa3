@@ -35,8 +35,8 @@ void main() {
     NHPow = pow(NH, 0.7);
 
     MatAmb = (0.1*texColor0).xyz;
-    MatDif = (0.5*texColor0).xyz;
-    MatSpec = (0.5*texColor0).xyz;
+    MatDif = (0.7*texColor0).xyz;
+    MatSpec = (0.7*texColor0).xyz;
 
 	Outcolor = vec4(MatAmb + (dC*MatDif) + (NHPow*MatSpec), 1.0);
   

@@ -59,10 +59,10 @@ public:
 
 	//global data (larger program should be encapsulated)
 	vec3 gMin;
-	float gRot = -0.4;
+	float gRot = 0.45;
 	float gCamH = -4;
 	//animation data
-	float lightTrans = -10.0;
+	float lightTrans = -2.0;
 	float gTrans = -3;
 	float sTheta = 0;
 	float eTheta = 0;
@@ -542,6 +542,11 @@ public:
 
             setModel(prog, Model);
             for (int i=0; i < carMesh.size(); i++) {
+                if (i == 4) {
+                    SetMaterial(prog, carColor%5);
+                } else {
+                    SetMaterial(prog, 4);
+                }
                 carMesh[i]->draw(prog);
             }
         Model->popMatrix();
@@ -557,6 +562,15 @@ public:
 
             setModel(prog, Model);
             for (int i=0; i < santaMesh.size(); i++) {
+                if (i == 4 || i == 6 || i == 8 || i == 10 || i == 12 || i == 17 || i == 24) {
+                    SetMaterial(prog, 2);
+                } else if (i == 1 || i == 3 || i == 9 || i == 11 || i == 13 || i == 25 || i == 18 || i == 26) {
+                    SetMaterial(prog, 5);
+                } else if (i == 0 || i == 2 || i == 5 || i == 7) {
+                    SetMaterial(prog, 7);
+                } else {
+                    SetMaterial(prog, 6);
+                }
                 santaMesh[i]->draw(prog);
             }
         Model->popMatrix();
@@ -570,6 +584,7 @@ public:
             Model->scale(vec3(1.25, 1.25, 1.25));
 
             setModel(prog, Model);
+            SetMaterial(prog, 1);
             for (int i=0; i < sleighMesh.size(); i++) {
                 sleighMesh[i]->draw(prog);
             }
@@ -590,13 +605,13 @@ public:
     			glUniform3f(curS->getUniform("MatSpec"), 0.296648, 0.296648, 0.296648);
     			glUniform1f(curS->getUniform("MatShine"), 11.264);
     		break;
-    		case 1: // decorations
+    		case 1: // sleigh (gold)
                 glUniform3f(curS->getUniform("MatAmb"), 0.2472, 0.1995, 0.0745);
     			glUniform3f(curS->getUniform("MatDif"), 0.75164, 0.60648, 0.22648);
     			glUniform3f(curS->getUniform("MatSpec"), 0.628281, 0.555802, 0.366065);
     			glUniform1f(curS->getUniform("MatShine"), 51.2);
     		break;
-    		case 2: //car
+    		case 2: // car body (ruby)
     			// glUniform3f(curS->getUniform("MatAmb"), 0.066, 0.066, 0.068);
     			// glUniform3f(curS->getUniform("MatDif"), 0.66, 0.66, 0.68);
     			// glUniform3f(curS->getUniform("MatSpec"), 0.4, 0.4, 0.41);
@@ -616,11 +631,29 @@ public:
     			glUniform3f(curS->getUniform("MatSpec"), 0.05, 0.075, 0.05);
     			glUniform1f(curS->getUniform("MatShine"), 10.0);
             break;
-            case 4: //lamp (chrome)
+            case 4: // lamp (chrome)
     			glUniform3f(curS->getUniform("MatAmb"), 0.25, 0.25, 0.25);
     			glUniform3f(curS->getUniform("MatDif"), 0.4, 0.4, 0.4);
     			glUniform3f(curS->getUniform("MatSpec"), 0.77, 0.77, 0.77);
     			glUniform1f(curS->getUniform("MatShine"), 76.8);
+            break;
+            case 5: // white rubber
+    			glUniform3f(curS->getUniform("MatAmb"), 0.05, 0.05, 0.05);
+    			glUniform3f(curS->getUniform("MatDif"), 0.5, 0.5, 0.5);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.7, 0.7, 0.7);
+    			glUniform1f(curS->getUniform("MatShine"), 10.8);
+            break;
+            case 6: // perl
+    			glUniform3f(curS->getUniform("MatAmb"), 0.25, 0.2, 0.2);
+    			glUniform3f(curS->getUniform("MatDif"), 1.0, 0.829, 0.829);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.3, 0.3, 0.3);
+    			glUniform1f(curS->getUniform("MatShine"), 11.8);
+            break;
+            case 7: // black plastic
+    			glUniform3f(curS->getUniform("MatAmb"), 0.0, 0.0, 0.0);
+    			glUniform3f(curS->getUniform("MatDif"), 0.01, 0.01, 0.01);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.5, 0.5, 0.5);
+    			glUniform1f(curS->getUniform("MatShine"), 32.8);
             break;
   		}
 	}
@@ -686,7 +719,6 @@ public:
             drawDecorations(Model);
 
             // Draw car
-            SetMaterial(prog, carColor%5);
             drawCar(Model);
 
             // Draw trees
@@ -702,28 +734,6 @@ public:
             drawLamps(Model);
 
         Model->popMatrix();
-
-		// draw the array of bunnies
-		// Model->pushMatrix();
-
-		// float sp = 3.0;
-		// float off = -3.5;
-		//   for (int i =0; i < 3; i++) {
-		//   	for (int j=0; j < 3; j++) {
-		// 	  Model->pushMatrix();
-		// 		Model->translate(vec3(off+sp*i, -1, off+sp*j));
-		// 		Model->scale(vec3(0.85, 0.85, 0.85));
-		// 		SetMaterial(prog, (i+j)%3);
-		// 		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-		// 		theBunny->draw(prog);
-		// 	  Model->popMatrix();
-		// 	}
-		//   }
-		// Model->popMatrix();
-
-		//draw the waving HM
-		// SetMaterial(prog, 1);
-		// drawHierModel(Model);
 
 		prog->unbind();
 
