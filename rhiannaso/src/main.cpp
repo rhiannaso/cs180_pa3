@@ -59,7 +59,7 @@ public:
 
 	//global data (larger program should be encapsulated)
 	vec3 gMin;
-	float gRot = 0.45;
+	float gRot = -0.3;
 	float gCamH = -4;
 	//animation data
 	float lightTrans = -2.0;
@@ -183,7 +183,7 @@ public:
 
 		//read in a load the texture
 		texture0 = make_shared<Texture>();
-  		texture0->setFilename(resourceDirectory + "/asphalt.jpg");
+  		texture0->setFilename(resourceDirectory + "/asphalt3.jpg");
   		texture0->init();
   		texture0->setUnit(0);
   		texture0->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
@@ -534,11 +534,11 @@ public:
 
     void drawCar(shared_ptr<MatrixStack> Model) {
         Model->pushMatrix();
-            driveTheta = 3*sin(glfwGetTime());
+            driveTheta = 2*sin(glfwGetTime());
 
-            Model->scale(vec3(0.4, 0.4, 0.4));
-            Model->translate(vec3(-5, 0.25, 8));
+            Model->translate(vec3(-5, 0.25, 4));
             Model->translate(vec3(0, 0, driveTheta));
+            Model->scale(vec3(0.4, 0.4, 0.4));
 
             setModel(prog, Model);
             for (int i=0; i < carMesh.size(); i++) {
@@ -584,7 +584,7 @@ public:
             Model->scale(vec3(1.25, 1.25, 1.25));
 
             setModel(prog, Model);
-            SetMaterial(prog, 1);
+            SetMaterial(prog, decColor%5);
             for (int i=0; i < sleighMesh.size(); i++) {
                 sleighMesh[i]->draw(prog);
             }
@@ -612,20 +612,12 @@ public:
     			glUniform1f(curS->getUniform("MatShine"), 51.2);
     		break;
     		case 2: // car body (ruby)
-    			// glUniform3f(curS->getUniform("MatAmb"), 0.066, 0.066, 0.068);
-    			// glUniform3f(curS->getUniform("MatDif"), 0.66, 0.66, 0.68);
-    			// glUniform3f(curS->getUniform("MatSpec"), 0.4, 0.4, 0.41);
-    			// glUniform1f(curS->getUniform("MatShine"), 127.9);
                 glUniform3f(curS->getUniform("MatAmb"), 0.1745, 0.01175, 0.01175);
     			glUniform3f(curS->getUniform("MatDif"), 0.61424, 0.04136, 0.04136);
     			glUniform3f(curS->getUniform("MatSpec"), 0.727811, 0.626959, 0.626959);
     			glUniform1f(curS->getUniform("MatShine"), 76.8);
     		break;
             case 3: //plant
-    			// glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.1, 0.01);
-    			// glUniform3f(curS->getUniform("MatDif"), 0.4, 0.6, 0.4);
-    			// glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.05, 0.05);
-    			// glUniform1f(curS->getUniform("MatShine"), 3.0);
                 glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.1, 0.01);
     			glUniform3f(curS->getUniform("MatDif"), 0.2, 0.3, 0.2);
     			glUniform3f(curS->getUniform("MatSpec"), 0.05, 0.075, 0.05);
@@ -715,7 +707,6 @@ public:
             drawHouse(Model);
 
             // Draw santa and sleigh
-            SetMaterial(prog, decColor%5);
             drawDecorations(Model);
 
             // Draw car
