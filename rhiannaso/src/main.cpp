@@ -59,10 +59,10 @@ public:
 
 	//global data (larger program should be encapsulated)
 	vec3 gMin;
-	float gRot = 0;
+	float gRot = -0.4;
 	float gCamH = -4;
 	//animation data
-	float lightTrans = -8.0;
+	float lightTrans = -10.0;
 	float gTrans = -3;
 	float sTheta = 0;
 	float eTheta = 0;
@@ -93,10 +93,10 @@ public:
 		}
 		//update global camera rotate
 		if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-			gRot -= 0.2;
+			gRot += 0.2;
 		}
 		if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-			gRot += 0.2;
+			gRot -= 0.2;
 		}
 		//update camera height
 		if (key == GLFW_KEY_S && action == GLFW_PRESS){
@@ -370,7 +370,7 @@ public:
 	//directly pass quad for the ground to the GPU
 	void initGround() {
 
-		float g_groundSize = 30;
+		float g_groundSize = 40;
 		float g_groundY = 0;
 
   		// A x-z plane at y = g_groundY of dimension [-g_groundSize, g_groundSize]^2
@@ -581,34 +581,46 @@ public:
 
     	switch (i) {
     		case 0: // house
-    			glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.01, 0.01);
-    			glUniform3f(curS->getUniform("MatDif"), 0.45, 0.3, 0.05);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.2, 0.15, 0.02);
-    			glUniform1f(curS->getUniform("MatShine"), 10.0);
+    			// glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.01, 0.01);
+    			// glUniform3f(curS->getUniform("MatDif"), 0.45, 0.3, 0.05);
+    			// glUniform3f(curS->getUniform("MatSpec"), 0.2, 0.15, 0.02);
+    			// glUniform1f(curS->getUniform("MatShine"), 10.0);
+                glUniform3f(curS->getUniform("MatAmb"), 0.25, 0.20725, 0.20725);
+    			glUniform3f(curS->getUniform("MatDif"), 0.38, 0.34, 0.28);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.296648, 0.296648, 0.296648);
+    			glUniform1f(curS->getUniform("MatShine"), 11.264);
     		break;
     		case 1: // decorations
-    			glUniform3f(curS->getUniform("MatAmb"), 0.086, 0.068, 0.032);
-    			glUniform3f(curS->getUniform("MatDif"), 0.86, 0.68, 0.32);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.45, 0.32, 0.15);
-    			glUniform1f(curS->getUniform("MatShine"), 120.0);
+                glUniform3f(curS->getUniform("MatAmb"), 0.2472, 0.1995, 0.0745);
+    			glUniform3f(curS->getUniform("MatDif"), 0.75164, 0.60648, 0.22648);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.628281, 0.555802, 0.366065);
+    			glUniform1f(curS->getUniform("MatShine"), 51.2);
     		break;
     		case 2: //car
-    			glUniform3f(curS->getUniform("MatAmb"), 0.066, 0.066, 0.068);
-    			glUniform3f(curS->getUniform("MatDif"), 0.66, 0.66, 0.68);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.4, 0.4, 0.41);
-    			glUniform1f(curS->getUniform("MatShine"), 127.9);
+    			// glUniform3f(curS->getUniform("MatAmb"), 0.066, 0.066, 0.068);
+    			// glUniform3f(curS->getUniform("MatDif"), 0.66, 0.66, 0.68);
+    			// glUniform3f(curS->getUniform("MatSpec"), 0.4, 0.4, 0.41);
+    			// glUniform1f(curS->getUniform("MatShine"), 127.9);
+                glUniform3f(curS->getUniform("MatAmb"), 0.1745, 0.01175, 0.01175);
+    			glUniform3f(curS->getUniform("MatDif"), 0.61424, 0.04136, 0.04136);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.727811, 0.626959, 0.626959);
+    			glUniform1f(curS->getUniform("MatShine"), 76.8);
     		break;
             case 3: //plant
-    			glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.1, 0.01);
-    			glUniform3f(curS->getUniform("MatDif"), 0.4, 0.6, 0.4);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.05, 0.05);
-    			glUniform1f(curS->getUniform("MatShine"), 3.0);
+    			// glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.1, 0.01);
+    			// glUniform3f(curS->getUniform("MatDif"), 0.4, 0.6, 0.4);
+    			// glUniform3f(curS->getUniform("MatSpec"), 0.02, 0.05, 0.05);
+    			// glUniform1f(curS->getUniform("MatShine"), 3.0);
+                glUniform3f(curS->getUniform("MatAmb"), 0.01, 0.1, 0.01);
+    			glUniform3f(curS->getUniform("MatDif"), 0.2, 0.3, 0.2);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.05, 0.075, 0.05);
+    			glUniform1f(curS->getUniform("MatShine"), 10.0);
             break;
-            case 4: //lamp
-    			glUniform3f(curS->getUniform("MatAmb"), 0.03, 0.03, 0.03);
-    			glUniform3f(curS->getUniform("MatDif"), 0.3, 0.3, 0.3);
-    			glUniform3f(curS->getUniform("MatSpec"), 0.5, 0.5, 0.5);
-    			glUniform1f(curS->getUniform("MatShine"), 115.0);
+            case 4: //lamp (chrome)
+    			glUniform3f(curS->getUniform("MatAmb"), 0.25, 0.25, 0.25);
+    			glUniform3f(curS->getUniform("MatDif"), 0.4, 0.4, 0.4);
+    			glUniform3f(curS->getUniform("MatSpec"), 0.77, 0.77, 0.77);
+    			glUniform1f(curS->getUniform("MatShine"), 76.8);
             break;
   		}
 	}
@@ -626,109 +638,6 @@ public:
 	void setModel(std::shared_ptr<Program> prog, std::shared_ptr<MatrixStack>M) {
 		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
    	}
-
-   	/* code to draw waving hierarchical model */
-   	// void drawHierModel(shared_ptr<MatrixStack> Model) {
-   	// 	// draw hierarchical mesh - replace with your code if desired
-	// 	Model->pushMatrix();
-	// 		Model->loadIdentity();
-	// 		Model->translate(vec3(gTrans, 0, 6));
-	// 		/* draw top cube - aka head */
-	// 		Model->pushMatrix();
-	// 			Model->translate(vec3(0, 1.4, 0));
-	// 			Model->scale(vec3(0.5, 0.5, 0.5));
-	// 			setModel(prog, Model);
-	// 			sphere->draw(prog);
-	// 		Model->popMatrix();
-	// 		//draw the torso with these transforms
-	// 		Model->pushMatrix();
-	// 		  Model->scale(vec3(1.15, 1.35, 1.0));
-	// 		  setModel(prog, Model);
-	// 		  sphere->draw(prog);
-	// 		Model->popMatrix();
-	// 		// draw the upper 'arm' - relative 
-	// 		//note you must change this to include 3 components!
-	// 		Model->pushMatrix();
-	// 		  //place at shoulder
-	// 		  Model->translate(vec3(0.8, 0.8, 0));
-	// 		  //rotate shoulder joint
-	// 		  Model->rotate(sTheta, vec3(0, 0, 1));
-	// 		  //move to shoulder joint
-	// 		  Model->translate(vec3(0.8, 0, 0));
-	
-	// 		    //now draw lower arm - this is INCOMPLETE and you will add a 3rd component
-	// 		  	//right now this is in the SAME place as the upper arm
-	// 		  	Model->pushMatrix();
-    //                 Model->translate(vec3(0.7, 0, 0)); // place at elbow
-    //                 Model->rotate(eTheta, vec3(0, 0, 1)); // rotate elbow joint
-    //                 Model->translate(vec3(0.7, 0, 0)); // move to elbow joint
-
-    //                 Model->pushMatrix();
-    //                     Model->translate(vec3(0.55, 0, 0)); // place at wrist
-    //                     Model->rotate(wTheta, vec3(0, 0, 1)); // rotate wrist joint
-    //                     Model->translate(vec3(0.2, 0, 0)); // move to wrist joint
-
-    //                     Model->scale(vec3(0.35, 0.25, 0.25));
-    //                     setModel(prog, Model);
-    //                     sphere->draw(prog);
-    //                 Model->popMatrix();
-
-    //                 Model->scale(vec3(0.7, 0.25, 0.25));
-    //                 setModel(prog, Model);
-    //                 sphere->draw(prog);
-	// 		  	Model->popMatrix();
-
-	// 		  //Do final scale ONLY to upper arm then draw
-	// 		  //non-uniform scale
-	// 		  Model->scale(vec3(0.8, 0.3, 0.25));
-	// 		  setModel(prog, Model);
-	// 		  sphere->draw(prog);
-	// 		Model->popMatrix();
-
-    //         // static left arm
-    //         Model->pushMatrix();
-	// 		  //place at shoulder
-	// 		  Model->translate(vec3(-0.8, 0.8, 0));
-	// 		  //rotate shoulder joint
-	// 		  Model->rotate(3.55, vec3(0, 0, 1));
-	// 		  //move to shoulder joint
-	// 		  Model->translate(vec3(0.8, 0, 0));
-	
-	// 		    //now draw lower arm - this is INCOMPLETE and you will add a 3rd component
-	// 		  	//right now this is in the SAME place as the upper arm
-	// 		  	Model->pushMatrix();
-    //                 Model->translate(vec3(0.7, 0, 0)); // place at elbow
-    //                 Model->rotate(2, vec3(0, 0, 1)); // rotate elbow joint
-    //                 Model->translate(vec3(0.7, 0, 0)); // move to elbow joint
-
-    //                 Model->pushMatrix();
-    //                     Model->translate(vec3(0.75, 0, 0)); // place at wrist
-    //                     Model->rotate(-0.75, vec3(0, 0, 1)); // rotate wrist joint
-    //                     Model->scale(vec3(0.35, 0.25, 0.25));
-    //                     setModel(prog, Model);
-    //                     sphere->draw(prog);
-    //                 Model->popMatrix();
-
-    //                 Model->scale(vec3(0.7, 0.25, 0.25));
-    //                 setModel(prog, Model);
-    //                 sphere->draw(prog);
-	// 		  	Model->popMatrix();
-
-	// 		  //Do final scale ONLY to upper arm then draw
-	// 		  //non-uniform scale
-	// 		  Model->scale(vec3(0.8, 0.3, 0.25));
-	// 		  setModel(prog, Model);
-	// 		  sphere->draw(prog);
-	// 		Model->popMatrix();
-		
-	// 	Model->popMatrix();
-
-    //     sTheta = sin(glfwGetTime());
-
-    //     eTheta = (sin(glfwGetTime()) + 1)/1.5;
-
-    //     wTheta = sin(4*glfwGetTime())/2;
-   	// }
 
 	void render() {
 		// Get current frame buffer size.
@@ -755,7 +664,7 @@ public:
 		View->pushMatrix();
 		View->loadIdentity();
 		//camera up and down
-		View->translate(vec3(0, gCamH, -25));
+		View->translate(vec3(0, gCamH, -20));
 		//global rotate (the whole scene )
 		View->rotate(gRot, vec3(0, 1, 0));
 
@@ -763,7 +672,7 @@ public:
 		prog->bind();
 		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
 		glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(View->topMatrix()));
-		glUniform3f(prog->getUniform("lightPos"), lightTrans, 8.0, 25.0);
+		glUniform3f(prog->getUniform("lightPos"), lightTrans, 15.0, 20.0);
         Model->pushMatrix();
             Model->loadIdentity();
             Model->translate(vec3(0, 0, 0));

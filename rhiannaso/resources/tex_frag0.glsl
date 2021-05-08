@@ -32,7 +32,7 @@ void main() {
     vec3 V = -1*EPos;
     vec3 H = normalize(lightDir + V);
     NH = (normal.x*H.x) + (normal.y*H.y) + (normal.z*H.z);
-    NHPow = pow(NH, 1.0);
+    NHPow = pow(NH, 0.7);
 
     MatAmb = (0.1*texColor0).xyz;
     MatDif = (0.5*texColor0).xyz;
